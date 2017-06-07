@@ -121,6 +121,7 @@ void main() {
         }
       };
       var _ = new TopLevelConfiguration.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "TopLevelConfiguration contained unexpected keys: extraKey");
     }
@@ -138,6 +139,7 @@ void main() {
           "  port: 5000";
 
       var _ = new TopLevelConfiguration(yamlString);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "port is required but was not found in configuration.");
     }
@@ -154,6 +156,7 @@ void main() {
         }
       };
       var _ = new TopLevelConfiguration.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "port is required but was not found in configuration.");
     }
@@ -165,6 +168,7 @@ void main() {
           "port: 80\n"
           "name: foobar\n";
       var _ = new TopLevelConfiguration(yamlString);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "database is required but was not found in configuration.");
     }
@@ -175,8 +179,33 @@ void main() {
         "name" : "foobar"
       };
       var _ = new TopLevelConfiguration.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "database is required but was not found in configuration.");
+    }
+  });
+
+  test("Invalid value for top-level property", () {
+    try {
+      var yamlString =
+          "name: foobar\n"
+          "port: 65536\n";
+
+      var _ = new TopLevelConfigurationWithValidation(yamlString);
+      fail("Should not succeed");
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfigurationWithValidation invalid property: [port: 65536]");
+    }
+
+    try {
+      var asMap = {
+        "name" : "foobar",
+        "port" : 65536
+      };
+      var _ = new TopLevelConfigurationWithValidation.fromMap(asMap);
+      fail("Should not succeed");
+    } on ConfigurationException catch (e) {
+      expect(e.message, "TopLevelConfigurationWithValidation invalid property: [port: 65536]");
     }
   });
 
@@ -194,6 +223,7 @@ void main() {
           "  extraDatabaseValue: 3";
 
       var _ = new ConfigurationSubclass(yamlString);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "port is required but was not found in configuration.");
     }
@@ -212,6 +242,7 @@ void main() {
         }
       };
       var _ = new ConfigurationSubclass.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "port is required but was not found in configuration.");
     }
@@ -231,6 +262,7 @@ void main() {
           "  extraDatabaseValue: 3";
 
       var _ = new ConfigurationSubclass(yamlString);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "extraValue is required but was not found in configuration.");
     }
@@ -249,6 +281,7 @@ void main() {
         }
       };
       var _ = new ConfigurationSubclass.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "extraValue is required but was not found in configuration.");
     }
@@ -268,6 +301,7 @@ void main() {
           "  extraDatabaseValue: 3";
 
       var _ = new ConfigurationSubclass(yamlString);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "port is required but was not found in configuration.");
     }
@@ -286,6 +320,7 @@ void main() {
         }
       };
       var _ = new ConfigurationSubclass.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "port is required but was not found in configuration.");
     }
@@ -305,6 +340,7 @@ void main() {
           "  port: 5000\n";
 
       var _ = new ConfigurationSubclass(yamlString);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "extraDatabaseValue is required but was not found in configuration.");
     }
@@ -323,8 +359,46 @@ void main() {
         }
       };
       var _ = new ConfigurationSubclass.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "extraDatabaseValue is required but was not found in configuration.");
+    }
+  });
+
+  test("Validation of the value of property from subclass", () {
+    try {
+      var yamlString =
+          "port: 80\n"
+          "name: foobar\n"
+          "database:\n"
+          "  host: not a host.com\n"
+          "  username: bob\n"
+          "  password: fred\n"
+          "  databaseName: dbname\n"
+          "  port: 5000\n";
+
+      var _ = new ConfigurationSubclassWithValidation(yamlString);
+      fail("Should not succeed");
+    } on ConfigurationException catch (e) {
+      expect(e.message, "DatabaseConfigurationSubclassWithValidation invalid property: [host: not a host.com]");
+    }
+
+    try {
+      var asMap = {
+        "port" : 80,
+        "name" : "foobar",
+        "database" : {
+          "host" : "not a host.com",
+          "username" : "bob",
+          "password" : "fred",
+          "databaseName" : "dbname",
+          "port" : 5000,
+        }
+      };
+      var _ = new ConfigurationSubclassWithValidation.fromMap(asMap);
+      fail("Should not succeed");
+    } on ConfigurationException catch (e) {
+      expect(e.message, "DatabaseConfigurationSubclassWithValidation invalid property: [host: not a host.com]");
     }
   });
 
@@ -417,6 +491,7 @@ void main() {
           "  port: 5000";
 
       var _ = new TopLevelConfiguration(yamlString);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "databaseName is required but was not found in configuration.");
     }
@@ -432,6 +507,7 @@ void main() {
         }
       };
       var _ = new TopLevelConfiguration.fromMap(asMap);
+      fail("Should not succeed");
     } on ConfigurationException catch (e) {
       expect(e.message, "databaseName is required but was not found in configuration.");
     }
@@ -626,6 +702,26 @@ class TopLevelConfiguration extends ConfigurationItem {
   DatabaseConnectionConfiguration database;
 }
 
+class TopLevelConfigurationWithValidation extends ConfigurationItem {
+  TopLevelConfigurationWithValidation(String contents) : super.fromString(contents);
+  TopLevelConfigurationWithValidation.fromFile(String fileName) : super.fromFile(fileName);
+  TopLevelConfigurationWithValidation.fromMap(Map map) : super.fromMap(map);
+
+  @requiredConfiguration
+  int port;
+
+  List<String> validate() {
+    if(port < 0 || port > 65535) {
+      return ["port: $port"];
+    }
+
+    return [];
+  }
+
+  @optionalConfiguration
+  String name;
+}
+
 class DatabaseConfigurationSubclass extends DatabaseConnectionConfiguration {
   DatabaseConfigurationSubclass();
 
@@ -652,6 +748,27 @@ class ConfigurationSubclass extends ConfigurationSuperclass {
   int extraValue;
 
   DatabaseConfigurationSubclass database;
+}
+
+class ConfigurationSubclassWithValidation extends ConfigurationSuperclass {
+  ConfigurationSubclassWithValidation(String contents) : super(contents);
+  ConfigurationSubclassWithValidation.fromFile(String fileName) : super.fromFile(fileName);
+  ConfigurationSubclassWithValidation.fromMap(Map map) : super.fromMap(map);
+
+  DatabaseConfigurationSubclassWithValidation database;
+}
+
+class DatabaseConfigurationSubclassWithValidation extends DatabaseConnectionConfiguration {
+  DatabaseConfigurationSubclassWithValidation();
+
+  List<String> validate() {
+    RegExp validHost = new RegExp(r"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$");
+    if (!validHost.hasMatch(host)) {
+      return ["host: $host"];
+    }
+
+    return [];
+  }
 }
 
 class SpecialInfo extends ConfigurationItem {
